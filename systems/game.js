@@ -21,7 +21,10 @@ const gravity = new THREE.Vector3(0, -0.05, 0);
 let isFirstLoad = true;
 
 function refreshShowcase() {
-    if (showcaseBear) { scene.remove(showcaseBear); showcaseBear = null; }
+    if (showcaseBear) { 
+        scene.remove(showcaseBear); 
+        showcaseBear = null; 
+    }
     if (showcaseFish) { 
         if(showcaseFish.parent) showcaseFish.parent.remove(showcaseFish);
         else scene.remove(showcaseFish); 
@@ -34,7 +37,12 @@ function refreshShowcase() {
     showcaseBear.position.set(0, 4.65, 0.8);
     showcaseBear.rotation.set(0, 0, 0); // Face camera
     scene.add(showcaseBear);
+
     // Fish showcase
+    // Temporarily remove from scene if createFish adds it automatically.
+    const tempFish = scene.getObjectByName('fish');
+    if (tempFish) scene.remove(tempFish);
+
     showcaseFish = createFish(scene, 0, playerProgress.selectedFish);
     showcaseFish.name = 'showcase-fish';  
 
@@ -96,7 +104,10 @@ function setupStartScreen() {
 
 function startGame() {
     gameState = { current: 'PLAYING', score: 0, streak: 1 };
-    if (showcaseBear) { scene.remove(showcaseBear); showcaseBear = null; }
+    if (showcaseBear) { 
+        scene.remove(showcaseBear); 
+        showcaseBear = null; 
+    }
     if (showcaseFish) { 
         if(showcaseFish.parent) showcaseFish.parent.remove(showcaseFish);
         else scene.remove(showcaseFish); 
