@@ -96,6 +96,8 @@ canvas {
 #game-over-screen {
     background: rgba(0, 0, 0, 0.7);
     opacity: 1;
+    justify-content: center;
+    gap: 20px;
 }
 
 #game-over-screen.fade-out {

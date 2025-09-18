@@ -25,11 +25,8 @@ function refreshShowcase() {
         scene.remove(showcaseBear); 
         showcaseBear = null; 
     }
-    if (showcaseFish) { 
-        if(showcaseFish.parent) showcaseFish.parent.remove(showcaseFish);
-        else scene.remove(showcaseFish); 
-        showcaseFish = null; 
-    }
+    // No need to remove showcaseFish separately, it should be a child of showcaseBear.
+
     // Bear showcase
     showcaseBear = createBear(playerProgress.selectedBear);
     showcaseBear.name = 'showcase-bear';
@@ -37,26 +34,21 @@ function refreshShowcase() {
     showcaseBear.position.set(0, 4.65, 0.8);
     showcaseBear.rotation.set(0, 0, 0); // Face camera
     scene.add(showcaseBear);
-
+    
     // Fish showcase
-    // Temporarily remove from scene if createFish adds it automatically.
-    const tempFish = scene.getObjectByName('fish');
-    if (tempFish) scene.remove(tempFish);
-
-    showcaseFish = createFish(scene, 0, playerProgress.selectedFish);
+    const fishContainer = new THREE.Group(); // Create a container to avoid direct scene add
+    showcaseFish = createFish(fishContainer, 0, playerProgress.selectedFish);
     showcaseFish.name = 'showcase-fish';  
 
     // Attach fish to bear's hand
     const rightArm = showcaseBear.getObjectByName('rightArm');
     if (rightArm) {
-        scene.remove(showcaseFish); // remove from main scene to add to arm
         rightArm.add(showcaseFish);
         showcaseFish.position.set(0.1, -0.7, 0.4);
         showcaseFish.rotation.set(-Math.PI / 4, Math.PI / 2, Math.PI);
         showcaseFish.scale.set(0.5, 0.5, 0.5);
     } else {
-        // Fallback position if arm isn't found
-        showcaseFish.position.set(2.0, 2.3, -1.5);
+        console.error("Showcase bear's right arm not found!");
     }
 
     if (showcaseFish.userData?.velocity) showcaseFish.userData.velocity.set(0, 0, 0);
@@ -107,6 +99,7 @@ function startGame() {
     if (showcaseBear) { 
         scene.remove(showcaseBear); 
         showcaseBear = null; 
+        showcaseFish = null; // Also nullify the fish reference
     }
     if (showcaseFish) { 
         if(showcaseFish.parent) showcaseFish.parent.remove(showcaseFish);
@@ -127,6 +120,23 @@ function startGame() {
     activeFishes.forEach(f => scene.remove(f));
     activeFishes = [];
     resetSpawner();
+}
+
+function transitionToStartScreen() {
+    const goScreen = document.getElementById('game-over-screen');
+    if (goScreen) {
+        goScreen.classList.add('fade-out');
+        const onFadeOut = () => {
+            goScreen.removeEventListener('animationend', onFadeOut);
+            if (bear) {
+                scene.remove(bear);
+                bear = null;
+            }
+            setupStartScreen();
+            startButton.innerText = 'RETRY';
+        };
+        goScreen.addEventListener('animationend', onFadeOut);
+    }
 }
 
 function gameOver() {
@@ -156,23 +166,13 @@ function gameOver() {
     playSFX(sounds.splash);
     activeFishes.forEach(f => scene.remove(f));
     activeFishes = [];
-
-    setTimeout(() => {
-        const goScreen = document.getElementById('game-over-screen');
-        if (goScreen) {
-            goScreen.classList.add('fade-out');
-            const onFadeOut = () => {
-                goScreen.removeEventListener('animationend', onFadeOut);
-                if (bear) {
-                    scene.remove(bear);
-                    bear = null;
-                }
-                setupStartScreen();
-                startButton.innerText = 'RETRY';
-            };
-            goScreen.addEventListener('animationend', onFadeOut);
-        }
-    }, 2000);
+    
+    const retryButton = document.getElementById('retry-button');
+    retryButton.classList.remove('hidden');
+    retryButton.onclick = () => {
+        retryButton.classList.add('hidden');
+        transitionToStartScreen();
+    };
 }
 
 export function initGame() {
